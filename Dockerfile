@@ -17,8 +17,12 @@ COPY . /app/
 
 # Install Node.js and npm
 RUN apt-get update && apt-get install -y nodejs npm
+
+# Install frontend dependencies and build
 WORKDIR /app/frontend
+COPY frontend/package.json frontend/package-lock.json ./
 RUN npm install
+COPY frontend/ ./
 RUN npm run build
 
 # Move back to the main directory
