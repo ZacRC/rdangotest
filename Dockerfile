@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.9
+FROM python:3.11
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -25,11 +25,17 @@ RUN npm install
 COPY frontend/ ./
 RUN npm run build
 
+# Collect static files
 # Move back to the main directory
 WORKDIR /app
 
+# Run gunicorn
 # Collect static files
 RUN python manage.py collectstatic --noinput
+
+# Run migrations
+RUN python manage.py makemigrations
+RUN python manage.py migrate
 
 # Run gunicorn
 CMD gunicorn backend.wsgi:application --bind 0.0.0.0:8000
