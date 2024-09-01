@@ -1,19 +1,18 @@
-# Build stage
-FROM node:14 AS build
-WORKDIR /app/frontend
-COPY frontend/package.json frontend/package-lock.json ./
-RUN npm install
-COPY frontend/ ./
-RUN npm run build
+FROM python:3.11
 
-# Main stage
-FROM zachrc/django-react-base:latest
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Set work directory
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy project
 COPY . /app/
-
-# Copy pre-built frontend files
-COPY --from=build /app/frontend/build /app/frontend/build
 
 # Collect static files
 RUN python manage.py collectstatic --noinput
