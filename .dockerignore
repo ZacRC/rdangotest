@@ -24,3 +24,6 @@ coverage.xml
 .mypy_cache
 .pytest_cache
 .hypothesis
+frontend/node_modules
+frontend/build
+*.sqlite3

@@ -1,18 +1,26 @@
-FROM python:3.11
+# Stage 1: Build Python wheels
+FROM python:3.11-slim as builder
 
-# Set environment variables
+WORKDIR /wheels
+COPY requirements.txt .
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /wheels -r requirements.txt
+
+# Stage 2: Final image
+FROM python:3.11-slim
+
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# Set work directory
 WORKDIR /app
 
-# Install dependencies
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy pre-built wheels and install
+COPY --from=builder /wheels /wheels
+COPY requirements.txt .
+RUN pip install --no-cache /wheels/*
 
-# Copy project
-COPY . /app/
+# Copy project files
+COPY backend /app/backend
+COPY manage.py .
 
 # Collect static files
 RUN python manage.py collectstatic --noinput
@@ -21,5 +29,4 @@ RUN python manage.py collectstatic --noinput
 RUN python manage.py makemigrations
 RUN python manage.py migrate
 
-# Run gunicorn
 CMD gunicorn backend.wsgi:application --bind 0.0.0.0:8000
